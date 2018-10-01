@@ -42,7 +42,9 @@ class QLearningAgent(ReinforcementAgent):
         "You can initialize Q-values here..."
         ReinforcementAgent.__init__(self, **args)
 
-        "*** YOUR CODE HERE ***"
+        #we need a way of keeping track of the states that we have seen
+        #so we will use a dictionary like in the previous agent
+        self.allQValues = util.Counter() #just like the other agent
 
     def getQValue(self, state, action):
         """
@@ -50,8 +52,14 @@ class QLearningAgent(ReinforcementAgent):
           Should return 0.0 if we have never seen a state
           or the Q node value otherwise
         """
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        
+        #This one is pretty simple, if we have seen the state then
+        #we will return its value, if not then we return a default value
+        state_action = (state, action)
+        if state_action not in self.allQValues:
+          return 0.0
+        else:
+          return self.allQValues[state_action]
 
 
     def computeValueFromQValues(self, state):
@@ -61,8 +69,21 @@ class QLearningAgent(ReinforcementAgent):
           there are no legal actions, which is the case at the
           terminal state, you should return a value of 0.0.
         """
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        if self.getLegalActions(state) == None:
+          return 0.0
+        else:
+          #choose best action
+          bestQValue = None
+          finalAction = None
+          for action in self.getLegalActions(state):
+            if bestQValue == None or self.getQValue(state, action) >= bestQValue:
+              bestQValue = self.getQValue(state, action)
+              finalAction = action
+
+          if bestQValue == None:
+            return 0.0
+          else:
+            return bestQValue 
 
     def computeActionFromQValues(self, state):
         """
@@ -70,8 +91,21 @@ class QLearningAgent(ReinforcementAgent):
           are no legal actions, which is the case at the terminal state,
           you should return None.
         """
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        if self.getLegalActions(state) == None:
+          return None
+        else:
+          bestQValue = None
+          bestAction = None
+
+          for action in self.getLegalActions(state):
+            if bestQValue == None or self.getQValue(state, action) >= bestQValue:
+              bestQValue = self.getQValue(state, action)
+              finalAction = action
+
+          if bestAction == None:
+            return None
+          else:
+            return bestAction
 
     def getAction(self, state):
         """
@@ -87,8 +121,16 @@ class QLearningAgent(ReinforcementAgent):
         # Pick Action
         legalActions = self.getLegalActions(state)
         action = None
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        
+        if util.flipCoin(self.epsilon):
+          #explore case
+          if legalActions == None:
+            action = None
+          else:
+            action = random(legalActions)
+        else:
+          #follow policy case
+          action = self.computeActionFromQValues(state)
 
         return action
 
@@ -101,8 +143,18 @@ class QLearningAgent(ReinforcementAgent):
           NOTE: You should never call this function,
           it will be called on your behalf
         """
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        #according to the book, the update should behave as follows
+        #Q(s,a) = Q(s,a) + alpha(N.sa)(R + gamma max a' Q(s',a') - Q(s,a))
+
+        stateActionPair = (state, action)
+        oldQ = self.allQValues[stateActionPair]
+        newQ = reward + (self.discount * self.computeValueFromQValues(nextState))
+
+        #This takes care of the left operand and the (R + gamma max a' Q(s',a')
+        #so now we must subtract
+        
+        self.allQValues[stateActionPair] = (self.alpha * newQ) - (self.alpha * oldQ)
+
 
     def getPolicy(self, state):
         return self.computeActionFromQValues(state)

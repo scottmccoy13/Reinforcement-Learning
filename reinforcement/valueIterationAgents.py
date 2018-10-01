@@ -37,6 +37,23 @@ class ValueIterationAgent(ValueEstimationAgent):
               mdp.getTransitionStatesAndProbs(state, action)
               mdp.getReward(state, action, nextState)
               mdp.isTerminal(state)
+        
+        PSUEDO CODE FROM BOOK
+        
+        repeat:
+          values = Uprime
+          delta = 0
+          for state in S:
+            Uprime = reward + gamma * sum(probability * U[s'])
+            if |Uprime[s] - values[s]| > delta:
+              delta = |Uprime[s] - values[s]|
+        until: delta < epsilon(1 - gamma)/gamma
+
+        This qsuedocode was basically useless...
+        The Bellman equation was somewhat helpful though. I watched several
+        youtube videos and read slides and code snipets from other sources 
+        to come up with this solution
+
         """
         self.mdp = mdp
         self.discount = discount
@@ -44,8 +61,27 @@ class ValueIterationAgent(ValueEstimationAgent):
         self.values = util.Counter() # A Counter is a dict with default 0
 
         # Write value iteration code here
-        "*** YOUR CODE HERE ***"
-
+        #a copy of the values of the states
+        Uprime = self.values.copy()
+        #need a finite number of passes large enough to converge
+        for i in range(self.iterations):
+          Uprime = self.values.copy() #first step in psuedocode loop
+          for state in mdp.getStates():
+            #state value is what the value of our state will be after convergence
+            stateValue = None
+            for action in self.mdp.getPossibleActions(state):
+              #get the q values for the current state for every action
+              currValue = self.computeQValueFromValues(state, action)
+              #if we have null value for our state or if current value is
+              #less than the currently observed transition then replace it
+              if stateValue == None or stateValue < currValue:
+                stateValue = currValue
+            #if all of the currValues were null then assign a default 0
+            if stateValue == None:
+              stateValue = 0
+            #update the value for the state
+            Uprime[state] = stateValue
+          self.values = Uprime.copy()
 
     def getValue(self, state):
         """
@@ -60,7 +96,29 @@ class ValueIterationAgent(ValueEstimationAgent):
           value function stored in self.values.
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        #Qvalue for the state in question
+        Qvalue = 0
+        #returns (state, probability) pair
+        delta = self.mdp.getTransitionStatesAndProbs(state, action)
+
+        #this part of code is basically representing the summation
+        #from the Bellman equation
+        #for every transition from the current
+        sigma = 0
+        for item in delta:
+          reward = self.mdp.getReward(state, action, item[0])
+          probability = item[1] 
+
+          #R(s) 
+          sigma += reward
+
+          #R(s) + gamma * P(s' | s,a) * U[s']
+          sigma += (self.discount * (probability * self.values[item[0]]))
+
+          Qvalue += sigma
+          sigma = 0
+
+        return Qvalue
 
     def computeActionFromValues(self, state):
         """
@@ -72,7 +130,26 @@ class ValueIterationAgent(ValueEstimationAgent):
           terminal state, you should return None.
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        #if we are in terminal state then we must exit so no actions
+        if self.mdp.isTerminal(state) == True:
+          return None
+        else:
+          possibleAction = None
+          possibleValue = None
+
+          for action in self.mdp.getPossibleActions(state):
+            #for every action check the possible states values and replace
+            #our current best value and remember what action lead to it
+            if self.computeQValueFromValues(state, action) >= possibleValue:
+              possibleValue = self.computeQValueFromValues(state, action)
+              possibleAction = action
+
+            #this loop wont work the first time without this line
+            if possibleValue == None:
+              possibleValue = self.computeQValueFromValues(state, action)
+              possibleAction = action
+
+          return possibleAction
 
     def getPolicy(self, state):
         return self.computeActionFromValues(state)
