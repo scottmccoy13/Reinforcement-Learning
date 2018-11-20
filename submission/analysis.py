@@ -52,7 +52,6 @@ Question 1 attempt 1
               bestAction = ((0, 0), 0.0) #this should never be our final value
             Uprime[state] = self.discount * bestAction[1] #+ getReward(state, bestAction[0], )
 
-#I scrapped this and started over for my final answer
 '''
 
 def question2():
@@ -68,9 +67,9 @@ def question3a():
     # If not possible, return 'NOT POSSIBLE'
 
 def question3b():
-    answerDiscount = 0.3#0.7
-    answerNoise = 0.3#0.2
-    answerLivingReward = 0#-0.7 didnt think of just not having a living reward
+    answerDiscount = 0.7
+    answerNoise = 0.2
+    answerLivingReward = -0.7
     return answerDiscount, answerNoise, answerLivingReward
     # If not possible, return 'NOT POSSIBLE'
 
@@ -82,9 +81,9 @@ def question3c():
     # If not possible, return 'NOT POSSIBLE'
 
 def question3d():
-    answerDiscount = 1#0.7
-    answerNoise = 0.5#0.1
-    answerLivingReward = 0#-0.15 same as 3b
+    answerDiscount = 0.7
+    answerNoise = 0.1
+    answerLivingReward = -0.15
     return answerDiscount, answerNoise, answerLivingReward
     # If not possible, return 'NOT POSSIBLE'
 
@@ -98,7 +97,7 @@ def question3e():
 def question6():
     answerEpsilon = None
     answerLearningRate = None
-    return 'NOT POSSIBLE'
+    return answerEpsilon, answerLearningRate
     # If not possible, return 'NOT POSSIBLE'
 
 if __name__ == '__main__':

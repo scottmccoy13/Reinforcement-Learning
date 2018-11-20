@@ -1,0 +1,26 @@
+Question 1:
+
+Question 1 was the hardest question that I was able to fully complete. To complete the question I 
+referenced a variety of different resources throughout the book and the internet. I first 
+started with the first step in the algorithm provided by the book: set U' to be a copy of the 
+list. Then since it was specified in the problem that we would be doing 100 iterations I created
+a for loop to iterate 100 times. The next step in the algorithm was to copy the data in the values
+list (represented by U in the psuedocode). After this I needed to loop through every state and compute
+a value for every action in the state. This was achieved through the use of my computeQValueFromValues
+and my computeActionsFromValues functions.
+
+Question 2:
+
+To complete question 2 I just set the answerDiscount to be 0 so that there was no penalty causing the agent
+to attempt to cross the bridge.
+
+Question 3: for question three I just played with the different values and referenced the output of the 
+autograder to eventually come up with a strategy that worked. I was unable to find a sufficient strategy
+for questions 3b and 3d
+
+Question 4:
+
+This was the question that I got stuck on. I followed the qsuedocode from the book as well as tutorials online
+as well as I could but I was ultimately unable to get my algorithm to work correctly. I think that I am close but
+I am having a hard time tracking down where my algorithm is going wrong. I will come to office hours to get some
+clarification
