@@ -295,7 +295,24 @@ class ParticleFilter(InferenceModule):
         Storing your particles as a Counter (where there could be an associated
         weight with each position) is incorrect and may produce errors.
         """
-        "*** YOUR CODE HERE ***"
+        #initializing here, was sure to follow the note and made the representation
+        #of my particles a list rather than a dictionary
+        particleList = []
+        numParticles = self.numParticles
+
+        #this loop here initializes the list of particles. if there are still
+        #more particles in the list than there are legal positons then  
+        while numParticles > 0:
+            if numParticles < len(self.legalPositions):
+                while numParticles >= 0:
+                    particleList.append(self.legalPositions[numParticles])
+                    numParticles-=1
+            else:
+                for item in self.legalPositions:
+                    particleList.append(item)
+                    numParticles -= 1
+
+        self.particles = particleList
 
     def observe(self, observation, gameState):
         """
@@ -328,7 +345,33 @@ class ParticleFilter(InferenceModule):
         emissionModel = busters.getObservationDistribution(noisyDistance)
         pacmanPosition = gameState.getPacmanPosition()
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        beliefs = util.Counter()
+        
+        if noisyDistance == None:
+            for i in range(len(self.particles)) :
+                self.particles[i] = self.getJailPosition()
+        
+        else:
+            #first weigh the particles in our belief system, then
+            #multiply by the emmission model value for the distance
+            #between the square represented by the belief and pacmans 
+            #actual position
+            for i in range(len(self.particles)): 
+                beliefs[self.particles[i]] += 1
+
+            for belief in beliefs:
+                beliefs[belief] *= emissionModel[util.manhattanDistance(belief, pacmanPosition)] 
+            
+            #this covers the second edge case mentioned about, if all of the
+            #particle weights are 0 then we need to make a call to initializeUniformly
+            #if they are not all zero then we can use the helper method about to generate
+            #a same from he beliefs destribution
+            if beliefs.totalCount() == 0: 
+                self.initializeUniformly(gameState) 
+            else:
+                for i in range(len(self.particles)):
+                    self.particles[i] = util.sample(beliefs) 
+
 
     def elapseTime(self, gameState):
         """
@@ -345,7 +388,7 @@ class ParticleFilter(InferenceModule):
         a belief distribution.
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        
 
     def getBeliefDistribution(self):
         """
@@ -355,7 +398,20 @@ class ParticleFilter(InferenceModule):
         Counter object)
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+
+        #here it is pretty straightforward, we are just adding one for every
+        #particle that we had in the initializeUniformly function and then
+        #we are normalizing and returning the distribution. I drew inspiration
+        #here from the initializeUniformly function in the exactInference class
+        
+        probabilityDistribution = util.Counter()
+
+        for particle in self.particles:
+            probabilityDistribution[particle] += 1
+
+        probabilityDistribution.normalize()
+        return probabilityDistribution
+
 
 class MarginalInference(InferenceModule):
     """
