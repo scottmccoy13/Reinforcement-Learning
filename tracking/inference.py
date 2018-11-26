@@ -367,7 +367,7 @@ class ParticleFilter(InferenceModule):
             #if they are not all zero then we can use the helper method about to generate
             #a same from he beliefs destribution
             if beliefs.totalCount() == 0: 
-                self.initializeUniformly(gameState) 
+                self.initializeUniformly(gameState)
             else:
                 for i in range(len(self.particles)):
                     self.particles[i] = util.sample(beliefs) 
@@ -389,7 +389,7 @@ class ParticleFilter(InferenceModule):
         """
         "*** YOUR CODE HERE ***"
         #for this function we are just creating a new distribition by taking
-        #the line given above and then sampling it for every particle that we 
+        #the code given above and then sampling it for every particle that we 
         #have. we then replace out old self.particles with our new distribution
         newDist = []
         for particle in self.particles:
@@ -417,7 +417,6 @@ class ParticleFilter(InferenceModule):
 
         probabilityDistribution.normalize()
         return probabilityDistribution
-
 
 class MarginalInference(InferenceModule):
     """
@@ -558,9 +557,43 @@ class JointParticleFilter:
         "*** YOUR CODE HERE ***"
 
         allStates = util.Counter()
-        
-        
 
+        #GENERAL CASE
+        for i in range(len(self.particles)):
+            newParticleWeight = 1.0
+            for j in range(self.numGhosts):
+                if noisyDistances[j] == None:
+                    self.particles[i] = self.getParticleWithGhostInJail(particle, i)
+                else:
+                    newParticleWeight *= emissionModels[j][util.manhattanDistance(self.particles[i][j], pacmanPosition)]
+            allStates[self.particles[i]] += newParticleWeight
+
+        #SPECIAL CASES
+        #if all of the particles have weight 0
+        #then we need to loop through all of the particles and 
+        #all of the ghosts for each particle and check if it 
+        #is in jail. if it is then we need to update 
+        #the particle appropriately
+        #*
+        #if there is at least 1 particle that isn't 0 then
+        #we just iterate through all of the particles and resample
+        #to get an updated list of particles
+        if sum(allStates.values()) == 0:
+            #as 2) mentions we need to call initializeParticles
+            self.initializeParticles()
+            for i in range(len(self.particles)):
+                for j in range(self.numGhosts):
+                    #jail case
+                    if noisyDistances[j] == None:
+                        particle = self.getParticleWithGhostInJail(self.particles[i], j)
+        else:
+            newParticles = []
+            i = 0
+            while i < self.numParticles:
+                newParticles.append(util.sample(allStates))
+            self.particles = newParticles
+
+  
     def getParticleWithGhostInJail(self, particle, ghostIndex):
         """
         Takes a particle (as a tuple of ghost positions) and returns a particle
@@ -620,7 +653,16 @@ class JointParticleFilter:
             # now loop through and update each entry in newParticle...
 
             "*** YOUR CODE HERE ***"
-
+            #for here what we are doing is kind of similar to what we
+            #were doing with the elapse time for the particle filter class.
+            #Since we are dealing with multiple ghosts now we now must
+            #loop over every ghost as well as every particle in out distribution.
+            #We then will use the line of code given in the comments above to get
+            #a new distribution. Once we have the new distribution all we have to
+            #do is sample it
+            for ghost in range(self.numGhosts):
+                newDist = getPositionDistributionForGhost(setGhostPositions(gameState, newParticle), ghost, self.ghostAgents[ghost])
+                newParticle[ghost] = util.sample(newDist)
             "*** END YOUR CODE HERE ***"
             newParticles.append(tuple(newParticle))
         self.particles = newParticles
