@@ -559,12 +559,23 @@ class JointParticleFilter:
         allStates = util.Counter()
 
         #GENERAL CASE
+        #this was a good deal more difficult to figure out that the
+        #special cases because there wasn't really much guidance given
+        #by the instructions or by the comments but it is pretty similar
+        #to what we did in the first special case except that if the ghost
+        #is not in jail then we just update the particle weight similar to
+        #what we did in one of the questions above except that now we have to
+        #use the emission weight for that specific ghost rather than just for 
+        #that particle
         for i in range(len(self.particles)):
             newParticleWeight = 1.0
             for j in range(self.numGhosts):
                 if noisyDistances[j] == None:
-                    self.particles[i] = self.getParticleWithGhostInJail(particle, i)
+                    #covering the jail case
+                    self.particles[i] = self.getParticleWithGhostInJail(self.particles[i], j)
                 else:
+                    #here we update the value by multiplying it by the emission model
+                    #value
                     newParticleWeight *= emissionModels[j][util.manhattanDistance(self.particles[i][j], pacmanPosition)]
             allStates[self.particles[i]] += newParticleWeight
 
@@ -589,8 +600,10 @@ class JointParticleFilter:
         else:
             newParticles = []
             i = 0
+            #this was the culprit for the infinity loop
             while i < self.numParticles:
                 newParticles.append(util.sample(allStates))
+                i+=1
             self.particles = newParticles
 
   
