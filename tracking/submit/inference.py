@@ -302,9 +302,6 @@ class ParticleFilter(InferenceModule):
 
         #this loop here initializes the list of particles. if there are still
         #more particles in the list than there are legal positons then  
-        #a full list of the legal positions are appended to the particle list
-        #if not then the value stored for the legal postion dict at numParticles
-        #is appended to the list
         while numParticles > 0:
             if numParticles < len(self.legalPositions):
                 while numParticles >= 0:
@@ -393,7 +390,7 @@ class ParticleFilter(InferenceModule):
         "*** YOUR CODE HERE ***"
         #for this function we are just creating a new distribition by taking
         #the code given above and then sampling it for every particle that we 
-        #have. we then replace the old self.particles with our new distribution
+        #have. we then replace out old self.particles with our new distribution
         newDist = []
         for particle in self.particles:
             newDist.append(util.sample(self.getPositionDistribution(self.setGhostPosition(gameState, particle))))
@@ -562,7 +559,7 @@ class JointParticleFilter:
         allStates = util.Counter()
 
         #GENERAL CASE
-        #this was a good deal more difficult to figure out the general case than the
+        #this was a good deal more difficult to figure out that the
         #special cases because there wasn't really much guidance given
         #by the instructions or by the comments but it is pretty similar
         #to what we did in the first special case except that if the ghost
@@ -603,7 +600,7 @@ class JointParticleFilter:
         else:
             newParticles = []
             i = 0
-            #this was the culprit for the infinite loop
+            #this was the culprit for the infinity loop
             while i < self.numParticles:
                 newParticles.append(util.sample(allStates))
                 i+=1
