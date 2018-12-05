@@ -1,5 +1,7 @@
+import sys
+
 class Map:
-	def __init__(self):
+	def __init__(self, livReward, bridgeDanger):
 		self.myMap = None #size will be set later
 		self.numRows = 0
 		self.numColumns = 0
@@ -9,7 +11,8 @@ class Map:
 		self.startState = None
 		self.endState = None
 		self.discount = 0.8
-		self.livingReward = -1.0
+		self.livingReward = livReward
+		self.bridgeDanger = bridgeDanger
 
 	def initializeMap(self):
 		with open("map.csv", "r") as mapFile:		
@@ -33,7 +36,7 @@ class Map:
 				line = line.split(",")
 				#print(line)
 				for value in line:
-					self.myMap[row][column] = Tile(value)
+					self.myMap[row][column] = Tile(value, self.bridgeDanger)
 					if(value == 'S'):
 						self.startState = (row, column)
 						self.legalStates.append((row,column))
@@ -74,8 +77,6 @@ class Map:
 
 	def getPossibleNextStates(self, currentPosition):
 		possibleMoves = []
-
-		print(currentPosition)
 
 		#south case
 		if((currentPosition[0]+1,currentPosition[1]) in self.legalStates):
@@ -167,7 +168,6 @@ class Map:
 			prob = item[1]
 
 			sigma += reward
-			print(item[0])
 			sigma += (self.discount * (prob * self.stateValue[item[0]]))
 			Qvalue += sigma
 
@@ -181,32 +181,19 @@ class Map:
 				print(self.stateValue[(i,j)], end=" ")
 			print('\n')
 
-'''
-	def computeActionFromValue(self, state):
-		if state == self.endState:
-			return None
-		else:
-			possibleAction = None
-			possibleValue = None
+	def writeMapValuesToFile(self):
+		with open("output.csv", "w+") as output:
+			for i in range(self.numRows):
+				for j in range(self.numColumns):
+					output.write( str(round(self.stateValue[(i,j)], 2)) )
+					output.write(",")
+				output.write('\n')
 
-			for action in self.mdp.getPossibleNextStates(state):
-				#for every action check the possible states values and replace
-				#our current best value and remember what action lead to it
-				if self.computeQValueFromValues(state, action) >= possibleValue:
-					possibleValue = self.computeQValueFromValues(state, action)
-					possibleAction = action
-
-				#this loop wont work the first time without this line
-				if possibleValue == None:
-					possibleValue = self.computeQValueFromValues(state, action)
-					possibleAction = action
-
-		return possibleAction
-'''
 class Tile:
-	def __init__(self, tileType):
+	def __init__(self, tileType, bridgeDanger):
 		self.type = tileType
 		self.reward = self.setReward()
+		self.bridgeDanger = bridgeDanger
 		#transition value is the probability that you will end
 		#up in the state that you were intending to end in
 		self.transitionValue = self.setTransitionValue()
@@ -232,7 +219,7 @@ class Tile:
 		elif(self.type == 'F'):
 			return 1.0
 		elif(self.type == 'B'):
-			return 0.6
+			return self.bridgeDanger
 		elif(self.type == 'T'):
 			return 1.0
 		elif(self.type == 'S'):
@@ -269,7 +256,12 @@ class UserAgent:
 
 
 if __name__ == "__main__":
-	map = Map()
+	if(len(sys.argv) < 3):
+		print("Invalid input form")
+		print("Proper form: 'python3 map.py [living reward] [bridge danger]")
+		exit(0)
+	
+	map = Map(float(sys.argv[1]), float(sys.argv[2]))
 	map.initializeMap()
 	map.readMap()
 	#map.printMap()
@@ -280,5 +272,5 @@ if __name__ == "__main__":
 	agent.valueIteration()
 
 	map.printMapValues()
-
+	map.writeMapValuesToFile()
 
